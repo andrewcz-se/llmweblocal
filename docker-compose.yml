@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # The Ollama LLM Server
+  ollama:
+    image: ollama/ollama
+    container_name: ollama_server
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - qwen_net
+    # --- UNCOMMENT THE 'deploy:' BLOCK BELOW TO ENABLE NVIDIA GPU ---
+    # This requires the NVIDIA Container Toolkit to be installed on your host.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all # Request all available GPUs
+              capabilities: [gpu]
+
+  # The Python Flask Web Server
+  web_server:
+    build: ./web_server
+    container_name: web_server
+    ports:
+      - "5001:5001" # Expose the web server on port 5001
+    networks:
+      - qwen_net
+    depends_on:
+      - ollama
+    environment:
+      # This tells the Python script how to find the Ollama server
+      - OLLAMA_HOST=http://ollama_server:11434
+
+volumes:
+  ollama_data: # This volume persists the downloaded models
+
+networks:
+  qwen_net:
+    driver: bridge
+

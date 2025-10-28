@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qwen3 Chat</title>
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Simple scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2d3748; /* gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4a5568; /* gray-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #718096; /* gray-500 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white font-sans flex flex-col h-screen">
+
+    <!-- Header -->
+    <header class="bg-gray-800 shadow-md p-4">
+        <h1 class="text-2xl font-bold text-center">Local Qwen3 Chat</h1>
+        <p class="text-center text-gray-400 text-sm">Powered by Ollama & Flask</p>
+    </header>
+
+    <!-- Chat Area -->
+    <main id="chat-container" class="flex-1 overflow-y-auto p-6 space-y-4">
+        <!-- Messages will be added here -->
+        <div class="p-4 bg-blue-900 rounded-lg max-w-lg ml-auto">
+            <p class="font-bold text-blue-300">System</p>
+            <p>Welcome! Send a message to start chatting with the Qwen3 model.</p>
+        </div>
+    </main>
+
+    <!-- Input Form -->
+    <footer class="bg-gray-800 p-4 shadow-inner">
+        <form id="chat-form" class="flex items-center max-w-3xl mx-auto">
+            <textarea
+                id="message-input"
+                rows="1"
+                class="flex-1 bg-gray-700 text-white p-3 rounded-l-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                placeholder="Type your message here..."
+            ></textarea>
+            <button
+                type="submit"
+                id="send-button"
+                class="bg-blue-600 text-white p-3 rounded-r-lg font-semibold hover:bg-blue-700 disabled:bg-gray-500"
+            >
+                Send
+            </button>
+        </form>
+    </footer>
+
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const chatContainer = document.getElementById('chat-container');
+        const sendButton = document.getElementById('send-button');
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', () => {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = (messageInput.scrollHeight) + 'px';
+        });
+
+        // Handle form submission
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Disable form and add user message to UI
+            setFormDisabled(true);
+            addMessageToUI(message, 'User');
+
+            // Clear input and reset height
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            try {
+                // Add a "typing" indicator
+                const typingIndicator = addMessageToUI('...', 'Bot');
+
+                // Send message to the Flask server
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message }),
+                });
+
+                // Remove "typing" indicator
+                typingIndicator.remove();
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Add bot response to UI
+                addMessageToUI(data.response, 'Bot');
+
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToUI(`Error: ${error.message}`, 'System', 'bg-red-900', 'text-red-300');
+            } finally {
+                // Re-enable form
+                setFormDisabled(false);
+            }
+        });
+
+        function setFormDisabled(disabled) {
+            messageInput.disabled = disabled;
+            sendButton.disabled = disabled;
+            sendButton.textContent = disabled ? '...' : 'Send';
+        }
+
+        function addMessageToUI(message, sender, bgClass, nameClass) {
+            const isUser = sender === 'User';
+            
+            // Set default styles
+            if (!bgClass) {
+                bgClass = isUser ? 'bg-gray-700' : 'bg-blue-900';
+            }
+            if (!nameClass) {
+                nameClass = isUser ? 'text-gray-300' : 'text-blue-300';
+            }
+            const alignClass = isUser ? 'ml-auto' : 'mr-auto';
+
+            const messageElement = document.createElement('div');
+            messageElement.className = `p-4 rounded-lg max-w-lg ${alignClass} ${bgClass}`;
+            
+            // Format sender name
+            const senderElement = document.createElement('p');
+            senderElement.className = `font-bold ${nameClass}`;
+            senderElement.textContent = sender;
+            
+            // Format message content (simple text for now)
+            const contentElement = document.createElement('p');
+            // Replace newlines with <br> tags for proper rendering
+            contentElement.innerHTML = message.replace(/\n/g, '<br>');
+
+            messageElement.appendChild(senderElement);
+            messageElement.appendChild(contentElement);
+            chatContainer.appendChild(messageElement);
+
+            // Scroll to the new message
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            return messageElement;
+        }
+
+        // Re-focus the input when the form is enabled
+        setFormDisabled(false);
+        messageInput.focus();
+
+    </script>
+</body>
+</html>
+

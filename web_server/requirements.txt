@@ -1,0 +1,4 @@
+# We now need Flask in addition to the openai library
+flask
+openai
+requests
