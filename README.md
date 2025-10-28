@@ -28,13 +28,13 @@ qwen_chat/
 ├── README.md               # This file  
 │  
 └── web_server/  
-    ├── app.py              # Flask backend server code  
-    ├── Dockerfile          # Instructions to build the web_server image  
-    ├── requirements.txt    # Python dependencies  
-    ├── .dockerignore       # Files/folders to ignore during Docker build  
-    │  
-    └── templates/  
-        └── index.html      # HTML/CSS/JS for the chat interface
+	├── app.py              # Flask backend server code  
+	├── Dockerfile          # Instructions to build the web_server image  
+	├── requirements.txt    # Python dependencies  
+	├── .dockerignore       # Files/folders to ignore during Docker build  
+	│  
+	└── templates/  
+		└── index.html      # HTML/CSS/JS for the chat interface
 
 ## **Prerequisites**
 
@@ -43,8 +43,10 @@ qwen_chat/
    * **NVIDIA Drivers:** Ensure you have the latest drivers for your NVIDIA GPU installed.  
    * **For Windows:** Docker Desktop uses WSL 2\. Ensure your Windows, NVIDIA drivers, and Docker Desktop are up-to-date. GPU support should work automatically if prerequisites are met. See [Docker Docs for GPU on Windows](https://docs.docker.com/desktop/features/gpu/).  
    * **For Linux:** Install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html). After installation, configure the Docker daemon:  
-     > sudo nvidia-ctk runtime configure --runtime=docker  
-     > sudo systemctl restart docker
+     
+	 > sudo nvidia-ctk runtime configure --runtime=docker
+	 
+	 > sudo systemctl restart docker
 
 ## **Setup and Running**
 
@@ -55,6 +57,7 @@ qwen_chat/
    * Find the ollama service definition.  
    * Uncomment the deploy: section to enable GPU access.  
 4. **Build and Start:** Run the following command:  
+   
    > docker-compose up --build -d
 
    * --build: Builds the web_server image (only needed the first time or after code changes).  
@@ -81,7 +84,8 @@ qwen_chat/
    http://localhost:5001  
 2. **Chat:** Enter your prompts in the input box and press Enter. The response from the Qwen3 model will appear.  
 3. **Stopping:** When you are finished, run the following command in the terminal from the project directory:  
-   docker-compose down
+   
+   > docker-compose down
 
    *(Optional: To remove the downloaded model data as well, use docker-compose down -v)*
 
@@ -96,6 +100,7 @@ If you shut down Docker Desktop and want to use the chat again later:
    > docker-compose up -d
 
    *(No --build is needed unless you changed the code)*.  
+   
 4. **Wait:** Give the Ollama server container ~15-30 seconds to initialize.  
 5. **Access:** Open http://localhost:5001 in your browser.
 
