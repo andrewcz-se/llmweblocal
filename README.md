@@ -10,7 +10,7 @@ This project provides a simple web-based chat interface to interact with an LLM 
 * **GPU Acceleration (Optional):** Can be configured to leverage your NVIDIA GPU for faster model inference.  
 * **Persistent Model Storage:** Downloads the LLM model once and stores it persistently using a Docker volume.  
 * **Automatic Model Download:** The web server checks if the required model is available and downloads it automatically on first run if needed.
-* **Includes persistent conversation history in the backend, sending full history to the model for context.
+* **Persistent conversation history:**Persists conversation history in the backend, sending full history to the model for continued chat context.
 
 ## **Technology Stack**
 
