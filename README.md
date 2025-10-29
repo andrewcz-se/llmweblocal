@@ -10,7 +10,7 @@ This project provides a simple web-based chat interface to interact with an LLM 
 * **GPU Acceleration (Optional):** Can be configured to leverage your NVIDIA GPU for faster model inference.  
 * **Persistent Model Storage:** Downloads the LLM model once and stores it persistently using a Docker volume.  
 * **Automatic Model Download:** The web server checks if the required model is available and downloads it automatically on first run if needed.
-* **Persistent conversation history:** Persists conversation history in the backend, sending full history to the model for continued chat context.
+* **Persistent Conversation History:** Persists conversation history in the backend, sending full history to the model for continued chat context.
 
 ## **Technology Stack**
 
@@ -83,7 +83,7 @@ qwen_chat/
 
 1. Access the Web UI: Open your web browser and go to:  
    http://localhost:5001  
-2. **Chat:** Enter your prompts in the input box and press Enter. The response from the Qwen3 model will appear.  
+2. **Chat:** Enter your prompts in the input box and press Enter. The response from the Qwen3 model will appear. Conversation history will be sent each time to maintain chat conversation context. To clear the chat and reset the current backend history re-send press **Clear Chat** at the top of the screen. 
 3. **Stopping:** When you are finished, run the following command in the terminal from the project directory:  
    
    > docker-compose down
