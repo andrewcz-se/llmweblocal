@@ -249,33 +249,34 @@
         const themeIconLight = document.getElementById('theme-icon-light');
 
         // Function to add a message to the chat
-        function addMessage(sender, message, isMarkdown = false) {
+        async function addMessage(sender, message, isMarkdown = false) {
             const bubble = document.createElement('div');
             bubble.classList.add(sender === 'user' ? 'user-bubble' : 'bot-bubble');
-            let needsMathJax = false; // Flag to check if MathJax processing is needed
-
+            
             if (sender === 'bot' && isMarkdown) {
-                marked.setOptions({
-                    gfm: true,
-                    breaks: true,
-                });
-                bubble.innerHTML = marked.parse(message);
-                // Check if the original message likely contained math delimiters
-                if (message.includes('$') || message.includes('\\(') || message.includes('\\[')) {
-                    needsMathJax = true;
-                }
+                // Use textContent to insert the raw message. This prevents the browser
+                // from interpreting backslashes (e.g., in \frac) as escape characters.
+                bubble.textContent = message;
             } else {
                  const p = document.createElement('p');
                  p.textContent = message;
                  bubble.appendChild(p);
             }
 
-            chatContainer.appendChild(bubble); // Append the bubble to the DOM
+            chatContainer.appendChild(bubble);
 
-            // --- Tell MathJax to typeset the *new* bubble IF needed ---
-            if (needsMathJax && typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
-                 MathJax.typesetPromise([bubble])
-                    .catch((err) => console.error('MathJax Typeset Error:', err));
+            // --- New, more robust rendering flow ---
+            if (sender === 'bot' && isMarkdown) {
+                // 1. Let MathJax find and render the math first. This is async.
+                if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+                    await MathJax.typesetPromise([bubble]).catch((err) => console.error('MathJax Typeset Error:', err));
+                }
+
+                // 2. AFTER MathJax is done, process the remaining content with Marked.js.
+                // MathJax will have replaced math with its own elements that Marked will ignore.
+                marked.setOptions({ gfm: true, breaks: true });
+                // We re-parse the innerHTML which now contains MathJax's output.
+                bubble.innerHTML = marked.parse(bubble.innerHTML);
             }
             // --------------------------------------------------------
 
@@ -323,7 +324,7 @@
                 const data = await response.json();
 
                 if (data.response) {
-                    addMessage('bot', data.response, true);
+                    await addMessage('bot', data.response, true);
                 } else if (data.error) {
                     throw new Error(data.error);
                 }
@@ -412,4 +413,3 @@
     </script>
 </body>
 </html>
-
